@@ -54,12 +54,24 @@ def add_phone(conn, id, number):
 
 def change_client(conn, id, name=None, surname=None, email=None, number=None):
     with conn.cursor() as cur:
-        cur.execute('''
+        if name:
+            cur.execute('''
                     UPDATE info
-                    SET name=%s, surname=%s, email=%s
+                    SET name=%s
                     WHERE id=%s
-                    RETURNING id, name, surname, email;
-                    ''', (name, surname, email, id))
+                    ''', (name, id))
+        if surname:
+            cur.execute('''
+                    UPDATE info
+                    SET surname=%s
+                    WHERE id=%s
+                    ''', (surname, id))
+        if email:
+            cur.execute('''
+                    UPDATE info
+                    SET email=%s
+                    WHERE id=%s
+                    ''', (email, id))
         conn.commit()
 
         if number: add_phone(conn, id, number)
@@ -92,35 +104,62 @@ def delete_client(conn, id):
 
 def find_client(conn, name=None, surname=None, email=None, number=None):
     with conn.cursor() as cur:
-        cur.execute('''
-                    SELECT id, name, surname, email FROM info
-                    WHERE name=%s or surname=%s or email=%s
-                    ''', (name, surname, email))
-        find_info = cur.fetchall()
-        for id, name, surname, email in find_info:
+        if name:
             cur.execute('''
-                    SELECT number FROM phone
-                    WHERE id_info=%s
-                    ''', (id,))
-            number = cur.fetchall()
-            print(name, surname, email, *number)
+                    SELECT i.id, i.name, i.surname, i.email, p.number
+                    FROM info as i
+                    LEFT JOIN phone AS p on i.id = p.id_info
+                    WHERE name=%s
+                    ''', (name,))
 
+        if surname:
+            cur.execute('''
+                    SELECT i.id, i.name, i.surname, i.email, p.number
+                    FROM info as i
+                    LEFT JOIN phone AS p on i.id = p.id_info
+                    WHERE surname=%s
+                    ''', (surname,))
+        if email:
+            cur.execute('''
+                    SELECT i.id, i.name, i.surname, i.email, p.number
+                    FROM info as i
+                    LEFT JOIN phone AS p on i.id = p.id_info
+                    WHERE email=%s
+                    ''', (email,))
+        if number:
+            cur.execute('''
+                    SELECT p.number, i.id, i.name, i.surname, i.email
+                    FROM phone as p
+                    LEFT JOIN info AS i on p.id_info = i.id
+                    WHERE number=%s
+                    ''', (number,))
         
-with psycopg2.connect(database='clients_db', user='postgres', password=password) as conn:
-    create_db(conn)
-    add_client(conn, 'Семен', 'Семенов', 'SemenSemenov@mail.ru', 89654987654)
-    add_client(conn, 'Иван', 'Иванов', 'IvanIvanof@mail.ru')
-    add_phone(conn, 2, 89564213598)
-    change_client(conn, 2, 'Ivan', 'Ivanov', 'IvanIvanov@rambler.com', 25987145698)
-    add_client(conn, 'Ivan', 'Semenov', 'SemenovIvan@yandex.ru', 25874125963)
+        print(cur.fetchall())
+        
 
-    add_phone(conn, 1, 85123695472)
-    delete_phone(conn, '89654987654')
-    add_client(conn, 'Сергей', 'Иванов', 'SergeyIvanov@yandex.ru', 85123654782)
-    delete_client(conn, 3)   
-    add_client(conn, 'Ivan', 'Semenov', 'SemenovIvan@yandex.ru', 25874125698)
-    find_client(conn, surname='Semenov')
-    find_client(conn, email='IvanIvanov@rambler.com')
-    find_client(conn, name='Ivan')
 
-conn.close()
+
+if __name__ == '__main__':   
+    with psycopg2.connect(database='clients_db', user='postgres', password=password) as conn:
+        create_db(conn)
+        add_client(conn, 'Семен', 'Семенов', 'SemenSemenov@mail.ru', 89654987654)
+        add_client(conn, 'Иван', 'Иванов', 'IvanIvanof@mail.ru')
+        add_phone(conn, 2, 89564213598)
+        change_client(conn, 2, 'Ivan', 'Ivanov', 'IvanIvanov@rambler.com', 25987145698)
+        add_client(conn, 'Ivan', 'Semenov', 'SemenovIvan@yandex.ru', 25874125963)
+        add_phone(conn, 1, 85123695472)
+        delete_phone(conn, '89654987654')
+        add_client(conn, 'Сергей', 'Иванов', 'SergeyIvanov@yandex.ru', 85123654782)
+        delete_client(conn, 3)   
+        add_client(conn, 'Ivan', 'Semenov', 'SemenovIvan@yandex.ru', 25874125698)
+        change_client(conn, 2, name='Sergey')
+        change_client(conn, 2, email='SergeyIvanov@rambler.ru')
+        change_client(conn, 2, name='Сергей')
+        find_client(conn, surname='Semenov')
+        find_client(conn, email='SergeyIvanov@yandex.ru')
+        find_client(conn, name='Сергей')
+        find_client(conn, name='Сергей', surname='Ivanov')
+        find_client(conn, number='25874125698')
+
+
+    conn.close()
