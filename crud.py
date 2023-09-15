@@ -6,8 +6,7 @@ def create_db(conn):
         cur.execute('''
                     DROP TABLE phone;
                     DROP TABLE info;
-                    '''); 
-              
+                    ''')
         cur.execute('''
                     CREATE TABLE IF NOT EXISTS info(
                     id SERIAL PRIMARY KEY,
@@ -15,7 +14,6 @@ def create_db(conn):
                     surname VARCHAR(60) NOT NULL,  
                     email VARCHAR(100) NOT NULL UNIQUE);
                     ''')
-
         cur.execute(''' 
                     CREATE TABLE IF NOT EXISTS phone(
                     id SERIAL PRIMARY KEY,
@@ -30,13 +28,10 @@ def add_client(conn, name, surname, email, number=None):
                     INSERT INTO info(name, surname, email) 
                     VALUES(%s, %s, %s);
                     ''', (name, surname, email))
-        
-
         cur.execute('''
                     SELECT id FROM info
                     WHERE name=%s and surname=%s and email=%s
                     ''', (name, surname, email))
-        
         id = cur.fetchone()
         if number: add_phone(conn, id, number)
 
@@ -89,7 +84,6 @@ def delete_client(conn, id):
                     ''', (id,))
         number = cur.fetchone()
         delete_phone(conn, number)
-        
         cur.execute('''
                     DELETE FROM info
                     WHERE id=%s
@@ -105,7 +99,6 @@ def find_client(conn, name=None, surname=None, email=None, number=None):
                     LEFT JOIN phone AS p on i.id = p.id_info
                     WHERE name=%s
                     ''', (name,))
-
         if surname:
             cur.execute('''
                     SELECT i.id, i.name, i.surname, i.email, p.number
@@ -127,7 +120,6 @@ def find_client(conn, name=None, surname=None, email=None, number=None):
                     LEFT JOIN info AS i on p.id_info = i.id
                     WHERE number=%s
                     ''', (number,))
-        
         print(cur.fetchall())
         
 
@@ -154,6 +146,4 @@ if __name__ == '__main__':
         find_client(conn, name='Сергей')
         find_client(conn, name='Сергей', surname='Ivanov')
         find_client(conn, number='25874125698')
-
-
     conn.close()
