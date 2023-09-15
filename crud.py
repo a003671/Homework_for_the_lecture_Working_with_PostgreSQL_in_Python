@@ -15,7 +15,6 @@ def create_db(conn):
                     surname VARCHAR(60) NOT NULL,  
                     email VARCHAR(100) NOT NULL UNIQUE);
                     ''')
-        conn.commit()
 
         cur.execute(''' 
                     CREATE TABLE IF NOT EXISTS phone(
