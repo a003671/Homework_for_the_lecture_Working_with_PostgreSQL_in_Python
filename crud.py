@@ -23,7 +23,6 @@ def create_db(conn):
                     number VARCHAR(15) UNIQUE NULL,
                     id_info int NULL REFERENCES info(id));
                     ''')
-        conn.commit()
 
 
 def add_client(conn, name, surname, email, number=None):
@@ -32,7 +31,7 @@ def add_client(conn, name, surname, email, number=None):
                     INSERT INTO info(name, surname, email) 
                     VALUES(%s, %s, %s);
                     ''', (name, surname, email))
-        conn.commit()
+        
 
         cur.execute('''
                     SELECT id FROM info
@@ -49,8 +48,7 @@ def add_phone(conn, id, number):
                     INSERT INTO phone(number, id_info)
                     VALUES(%s, %s);
                     ''', (number, id))
-        conn.commit()
-
+        
 
 def change_client(conn, id, name=None, surname=None, email=None, number=None):
     with conn.cursor() as cur:
@@ -72,8 +70,7 @@ def change_client(conn, id, name=None, surname=None, email=None, number=None):
                     SET email=%s
                     WHERE id=%s
                     ''', (email, id))
-        conn.commit()
-
+        
         if number: add_phone(conn, id, number)
         
 
@@ -83,7 +80,6 @@ def delete_phone(conn, number):
                     DELETE FROM phone
                     WHERE number=%s
                     ''', (number,))
-        conn.commit()
 
 
 def delete_client(conn, id):
@@ -99,8 +95,7 @@ def delete_client(conn, id):
                     DELETE FROM info
                     WHERE id=%s
                     ''', (id,))
-        conn.commit()
-
+   
 
 def find_client(conn, name=None, surname=None, email=None, number=None):
     with conn.cursor() as cur:
@@ -153,7 +148,7 @@ if __name__ == '__main__':
         delete_client(conn, 3)   
         add_client(conn, 'Ivan', 'Semenov', 'SemenovIvan@yandex.ru', 25874125698)
         change_client(conn, 2, name='Sergey')
-        change_client(conn, 2, email='SergeyIvanov@rambler.ru')
+        change_client(conn, 1, email='SergeyIvanov@rambler.ru')
         change_client(conn, 2, name='Сергей')
         find_client(conn, surname='Semenov')
         find_client(conn, email='SergeyIvanov@yandex.ru')
