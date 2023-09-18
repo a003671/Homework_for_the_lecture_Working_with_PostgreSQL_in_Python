@@ -90,39 +90,15 @@ def delete_client(conn, id):
                     ''', (id,))
    
 
-def find_client(conn, name=None, surname=None, email=None, number=None):
+def find_client(conn, name='%', surname='%', email='%', number='%'):
     with conn.cursor() as cur:
-        if name:
-            cur.execute('''
-                    SELECT i.id, i.name, i.surname, i.email, p.number
-                    FROM info as i
-                    LEFT JOIN phone AS p on i.id = p.id_info
-                    WHERE name=%s
-                    ''', (name,))
-        if surname:
-            cur.execute('''
-                    SELECT i.id, i.name, i.surname, i.email, p.number
-                    FROM info as i
-                    LEFT JOIN phone AS p on i.id = p.id_info
-                    WHERE surname=%s
-                    ''', (surname,))
-        if email:
-            cur.execute('''
-                    SELECT i.id, i.name, i.surname, i.email, p.number
-                    FROM info as i
-                    LEFT JOIN phone AS p on i.id = p.id_info
-                    WHERE email=%s
-                    ''', (email,))
-        if number:
-            cur.execute('''
-                    SELECT p.number, i.id, i.name, i.surname, i.email
-                    FROM phone as p
-                    LEFT JOIN info AS i on p.id_info = i.id
-                    WHERE number=%s
-                    ''', (number,))
+        cur.execute('''
+                    SELECT name, surname, email, number
+                    FROM info
+                    LEFT JOIN phone ON info.id = phone.id_info
+                    WHERE name LIKE %s AND surname LIKE %s AND email LIKE %s AND number LIKE %s
+                    ''', (name, surname, email, number))
         print(cur.fetchall())
-        
-
 
 
 if __name__ == '__main__':   
@@ -142,8 +118,8 @@ if __name__ == '__main__':
         change_client(conn, 2, name='Sergey')
         change_client(conn, 1, email='SergeyIvanov@rambler.ru')
         change_client(conn, 2, name='Сергей')
-        find_client(conn, surname='Semenov')
-        find_client(conn, email='SergeyIvanov@yandex.ru')
+        #ind_client(conn, surname='Semenov')
+        #find_client(conn, email='SergeyIvanov@yandex.ru')
         find_client(conn, name='Сергей')
-        find_client(conn, name='Сергей', surname='Иванов')
-        find_client(conn, number='25874125698')
+        #find_client(conn, name='Сергей', surname='Иванов')
+        #find_client(conn, number='25874125698')

@@ -1,4 +1,2 @@
 Psycopg2
 sqlalchemy
-json
-datetime
